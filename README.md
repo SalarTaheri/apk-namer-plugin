@@ -8,7 +8,19 @@
 
 توی فایل `build.gradle.kts`، هر جا `YOUR_GITHUB_USERNAME` نوشته شده رو با یوزرنیم گیت‌هاب خودت جایگزین کن.
 
-### ۲. ساخت ریپو و پوش کردن
+### ۲. اجرایی کردن gradlew (⚠️ مرحله‌ی حیاتی)
+
+JitPack برای build کردن پروژه به فایل‌های **Gradle Wrapper** نیاز داره (این پروژه از قبل شاملشونه: `gradlew`, `gradlew.bat`, `gradle/wrapper/`). بدون این فایل‌ها، JitPack خودش می‌ره با یه Gradle خیلی قدیمی (4.8.1) wrapper می‌سازه که با `kotlin-dsl` و Java 17 سازگار نیست و build شکست می‌خوره.
+
+قبل از commit، حتماً بیت اجرایی رو روی `gradlew` فعال کن (توی لینوکس/مک):
+
+```bash
+chmod +x gradlew
+```
+
+(اگه ویندوز داری و امکان اجرای این دستور نیست، از WSL یا Git Bash استفاده کن — این بیت باید توی خود گیت ثبت بشه.)
+
+### ۳. ساخت ریپو و پوش کردن
 
 ```bash
 git init
@@ -19,14 +31,21 @@ git remote add origin https://github.com/YOUR_GITHUB_USERNAME/apk-namer-plugin.g
 git push -u origin main
 ```
 
-### ۳. تگ زدن (این تگ همون version میشه)
+می‌تونی مطمئن بشی بیت اجرایی درست ثبت شده با:
+
+```bash
+git ls-files -s gradlew
+# باید با 100755 شروع بشه، نه 100644
+```
+
+### ۴. تگ زدن (این تگ همون version میشه)
 
 ```bash
 git tag 1.0.0
 git push origin 1.0.0
 ```
 
-### ۴. (اختیاری ولی پیشنهادی) فعال‌سازی روی JitPack
+### ۵. (اختیاری ولی پیشنهادی) فعال‌سازی روی JitPack
 
 برو به آدرس زیر و روی "Get it" کلیک کن تا اولین build اجرا بشه و مطمئن شی مشکلی نیست:
 
