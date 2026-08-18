@@ -4,7 +4,7 @@ plugins {
 }
 
 // ⚠️ YOUR_GITHUB_USERNAME رو با یوزرنیم گیت‌هاب خودت جایگزین کن
-group = "com.github.SalarTaheri"
+group = "com.github.YOUR_GITHUB_USERNAME"
 version = "1.0.0"
 
 repositories {
@@ -30,7 +30,7 @@ gradlePlugin {
 publishing {
     publications {
         create<MavenPublication>("maven") {
-            groupId = "com.github.SalarTaheri"
+            groupId = "com.github.YOUR_GITHUB_USERNAME"
             artifactId = "apk-namer-plugin"
             version = "1.0.0"
         }
