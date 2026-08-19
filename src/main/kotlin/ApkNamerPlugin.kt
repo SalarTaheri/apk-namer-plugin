@@ -1,4 +1,5 @@
 import com.android.build.api.variant.ApplicationAndroidComponentsExtension
+import com.android.build.api.variant.impl.VariantOutputImpl
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 
@@ -28,7 +29,9 @@ class ApkNamerPlugin : Plugin<Project> {
                 }
 
                 variant.outputs.forEach { output ->
-                    output.outputFileName.set(apkName)
+                    if (output is VariantOutputImpl) {
+                        output.outputFileName.set(apkName)
+                    }
                 }
 
                 project.logger.lifecycle("ApkName=$apkName (${variant.name})")
