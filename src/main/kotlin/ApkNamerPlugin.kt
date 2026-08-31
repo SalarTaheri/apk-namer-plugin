@@ -21,12 +21,15 @@ class ApkNamerPlugin : Plugin<Project> {
                 val flavorName = variant.flavorName?.takeIf { it.isNotEmpty() }
                 val buildType = variant.buildType?.takeIf { it.isNotEmpty() }
 
-                val apkName = buildString {
-                    flavorName?.let { append(it) }
-                    append("$sep$versionName")
-                    buildType?.let { append("$sep$it") }
-                    append(".apk")
-                }
+                val rootProjectName = project.rootProject.name
+                val components = listOfNotNull(
+                    rootProjectName,
+                    flavorName,
+                    buildType,
+                    versionName
+                )
+
+                val apkName = components.joinToString(separator = sep) + ".apk"
 
                 variant.outputs.forEach { output ->
                     if (output is VariantOutputImpl) {
