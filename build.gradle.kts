@@ -16,6 +16,7 @@ repositories {
 dependencies {
     // ورژن AGP رو با پروژه‌های مصرف‌کننده هماهنگ نگه دار
     compileOnly("com.android.tools.build:gradle:8.5.2")
+    testImplementation(kotlin("test"))
 }
 
 gradlePlugin {
