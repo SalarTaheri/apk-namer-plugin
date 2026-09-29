@@ -3,9 +3,9 @@ plugins {
     `maven-publish`
 }
 
-// ⚠️ YOUR_GITHUB_USERNAME رو با یوزرنیم گیت‌هاب خودت جایگزین کن
-group = "com.github.YOUR_GITHUB_USERNAME"
-version = "1.0.0"
+// JitPack Group & Version
+group = "com.github.SalarTaheri"
+version = "1.5.0"
 
 repositories {
     google()
@@ -31,9 +31,9 @@ gradlePlugin {
 publishing {
     publications {
         create<MavenPublication>("maven") {
-            groupId = "com.github.YOUR_GITHUB_USERNAME"
+            groupId = "com.github.SalarTaheri"
             artifactId = "apk-namer-plugin"
-            version = "1.0.0"
+            version = "1.5.0"
         }
     }
 }
