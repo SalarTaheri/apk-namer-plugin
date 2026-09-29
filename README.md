@@ -2,28 +2,49 @@
 
 [![Release](https://jitpack.io/v/SalarTaheri/apk-namer-plugin.svg)](https://jitpack.io/#SalarTaheri/apk-namer-plugin)
 
-پلاگین قدرتمند و منعطف گرادل برای نام‌گذاری خودکار و شخصی‌سازی نام فایل‌های APK در پروژه‌های اندروید بر اساس نام پروژه، نام پایه دلخواه، Flavor، نوع بیلد، نسخه برنامه، تاریخ، هش گیت و الگوهای سفارشی.
+> A modern, flexible Gradle plugin for Android projects to automatically customize and structure APK output filenames based on project names, flavors, build types, versions, timestamps, Git commit hashes, and custom template patterns.
 
-فرمت پیش‌فرض نام‌گذاری خروجی:
-```text
-<baseName><separator><flavorName><separator><buildType><separator><versionName>.apk
-```
-**نمونه‌ها:**
-- بدون Flavor: `MyApp_release_1.5.0.apk`
-- با Flavor: `GatePay_urovoProd_debug_1.0.apk`
-- با الگو و تاریخ: `GatePay-urovoProd-debug-v1.0-20260929.apk`
+[🇮🇷 مطالعه مستندات به زبان فارسی (Persian Documentation)](README_FA.md)
 
 ---
 
-## 📦 نحوه استفاده از طریق JitPack
+## 🌟 Key Features
 
-آخرین نسخه منتشر شده: **`1.5.0`**
+- **Custom Base Name**: Override the default `app` or `rootProject.name` with a dedicated app title (e.g., `GatePay`).
+- **Template Pattern Engine**: Define naming formats using dynamic tokens (e.g., `"{baseName}-{flavor}-v{versionName}-{date}"`).
+- **Rich Dynamic Tokens**: Supports `{baseName}`, `{rootProject}`, `{moduleName}`, `{flavor}`, `{buildType}`, `{versionName}`, `{versionCode}`, `{date}`, `{gitSha}`, and `{variantName}`.
+- **Smart Delimiter Sanitization**: Automatically removes consecutive and trailing/leading separators when optional components (such as flavors) are absent.
+- **Case Transformations**: Seamlessly format filenames to `SNAKE_CASE`, `KEBAB_CASE`, `LOWERCASE`, `UPPERCASE`, or keep original `PRESERVE`.
+- **Build Type Filtering**: Restrict renaming to specific variants (e.g., only `release` builds).
+- **Custom Closure / Lambda**: Total programmatic control via Kotlin lambda when complex naming rules are required.
+- **AGP 8.x+ Ready**: Built natively for Android Gradle Plugin 8.x and Gradle 8+.
 
-### روش اول: از طریق `pluginManagement` (روش استاندارد و پیشنهادی)
+---
 
-#### ۱. فایل `settings.gradle.kts` (یا `settings.gradle`)
+## 📐 Default Naming Scheme
 
-مخزن JitPack و نگاشت ماژول را در بخش `pluginManagement` اضافه کنید:
+When no custom pattern is supplied, the plugin structures the filename sequentially:
+
+```text
+<baseName><separator><flavorName><separator><buildType><separator><versionName>.apk
+```
+
+**Examples:**
+- Without Flavor: `MyApp_release_1.5.0.apk`
+- With Flavor: `GatePay_urovoProd_debug_1.0.apk`
+- With Pattern & Timestamp: `GatePay-urovoProd-debug-v1.0-20260929.apk`
+
+---
+
+## 📦 Installation via JitPack
+
+Latest Release: **`1.5.0`**
+
+### Option 1: Modern `pluginManagement` (Recommended)
+
+#### 1. In `settings.gradle.kts` (or `settings.gradle`)
+
+Add the JitPack repository and plugin resolution mapping:
 
 **Kotlin DSL (`settings.gradle.kts`):**
 ```kotlin
@@ -63,23 +84,31 @@ pluginManagement {
 }
 ```
 
-#### ۲. فایل `build.gradle.kts` ماژول اپلیکیشن (مثلاً `app/build.gradle.kts`)
+#### 2. In your Application module (`app/build.gradle.kts`)
 
-پلاگین را در بخش `plugins` فعال کنید:
+Apply the plugin in the `plugins` block:
 
 **Kotlin DSL (`app/build.gradle.kts`):**
 ```kotlin
 plugins {
-    alias(libs.plugins.android.application) // یا id("com.android.application")
+    alias(libs.plugins.android.application) // or id("com.android.application")
     id("ir.miranmahaleh.salar.apk-namer")
+}
+```
+
+**Groovy DSL (`app/build.gradle`):**
+```groovy
+plugins {
+    id 'com.android.application'
+    id 'ir.miranmahaleh.salar.apk-namer'
 }
 ```
 
 ---
 
-### روش دوم: از طریق `buildscript classpath` (کلاسیک)
+### Option 2: Classic `buildscript classpath`
 
-اگر ترجیح می‌دهید از `pluginManagement` استفاده نکنید، می‌توانید مستقیماً در فایل `build.gradle.kts` ریشه (Root Project) پلاگین را اضافه کنید:
+If you prefer applying plugins via the root project's buildscript:
 
 **Kotlin DSL (Root `build.gradle.kts`):**
 ```kotlin
@@ -95,7 +124,7 @@ buildscript {
 }
 ```
 
-سپس در `app/build.gradle.kts`:
+Then in `app/build.gradle.kts`:
 ```kotlin
 plugins {
     id("com.android.application")
@@ -105,71 +134,75 @@ plugins {
 
 ---
 
-## ⚙️ تنظیمات و سفارشی‌سازی (Configuration)
+## ⚙️ Configuration & Examples
 
-می‌توانید رفتار پلاگین را در `build.gradle.kts` ماژول اپلیکیشن از طریق بلاک `apkNamer` شخصی‌سازی کنید:
+Configure the plugin in your application module's `build.gradle.kts` via the `apkNamer` extension block:
 
-### نمونه ۱: تنظیم نام پایه، جداکننده و افزودن تاریخ یا کد نسخه
+### Example 1: Custom Base Name with Date and Git SHA
 
 ```kotlin
 apkNamer {
-    enabled = true
-    baseName = "GatePay"           // در صورت مشخص نشدن، نام rootProject در نظر گرفته می‌شود
-    separator = "_"                // جداکننده بین بخش‌ها
+    baseName = "GatePay"           // Defaults to rootProject.name if omitted
+    separator = "_"                // Delimiter between components
     includeVersionName = true
     includeVersionCode = false
-    includeDate = true             // افزودن تاریخ بیلد
-    dateFormat = "yyyyMMdd"        // فرمت تاریخ
-    includeGitSha = false          // افزودن هش کامیت گیت
+    includeDate = true             // Append build date
+    dateFormat = "yyyyMMdd"        // Date format string (SimpleDateFormat)
+    includeGitSha = true           // Append short Git commit hash
 }
 ```
 
-### نمونه ۲: استفاده از الگوی دلخواه (Template Pattern)
+### Example 2: Flexible Template Pattern
 
-می‌توانید با استفاده از توکن‌ها، ترتیب و فرمت نام فایل را دقیقاً به شکل دلخواه بسازید:
-
-```kotlin
-apkNamer {
-    pattern = "{baseName}-{flavor}-{buildType}-v{versionName}-{date}"
-}
-```
-
-**توکن‌های در دسترس:**
-* `{baseName}`: نام مشخص شده در `baseName` یا نام ریشه پروژه
-* `{rootProject}`: نام روت پروژه
-* `{moduleName}` / `{project}`: نام ماژول اپ (مانند `app`)
-* `{flavor}` یا `{flavorName}`: نام طعم بیلد (مانند `urovoProd`)
-* `{buildType}`: نوع بیلد (`debug` یا `release`)
-* `{versionName}`: نام نسخه (`1.0.0`)
-* `{versionCode}`: کد نسخه عددی
-* `{date}` / `{timestamp}`: تاریخ بیلد طبق `dateFormat`
-* `{gitSha}`: هش کوتاه آخرین کامیت گیت
-* `{variantName}`: نام کامل متغیر بیلد (مانند `urovoProdDebug`)
-
-### نمونه ۳: تغییر استایل حروف (Case Format) و پیشوند/پسوند
+Tokens allow custom ordering and arbitrary separators:
 
 ```kotlin
 apkNamer {
     baseName = "GatePay"
-    caseFormat = CaseFormat.KEBAB_CASE // یا SNAKE_CASE, LOWERCASE, UPPERCASE, PRESERVE
-    prefix = "Release_"
+    pattern = "{baseName}-{flavor}-{buildType}-v{versionName}-{date}"
+}
+```
+
+**Available Tokens:**
+| Token | Description | Example |
+| :--- | :--- | :--- |
+| `{baseName}` | Specified base name or root project name | `GatePay` |
+| `{rootProject}` | Name of the root Gradle project | `GatePayProject` |
+| `{moduleName}` / `{project}` | Name of the current Android module | `app` |
+| `{flavor}` / `{flavorName}` | Product flavor name | `urovoProd` |
+| `{buildType}` | Build type name | `release` / `debug` |
+| `{versionName}` | Application version name | `1.0.0` |
+| `{versionCode}` | Application integer version code | `12` |
+| `{date}` / `{timestamp}` | Formatted build date | `20260929` |
+| `{gitSha}` | Short Git commit hash | `f3a1b02` |
+| `{variantName}` | Full variant identifier | `urovoProdDebug` |
+
+### Example 3: Case Transformation, Prefix & Suffix
+
+```kotlin
+apkNamer {
+    baseName = "GatePay"
+    caseFormat = CaseFormat.KEBAB_CASE // PRESERVE, LOWERCASE, UPPERCASE, SNAKE_CASE, KEBAB_CASE
+    prefix = "CI_"
     suffix = "_signed"
 }
 ```
 
-### نمونه ۴: اعمال فیلتر بر روی بیلدها (Target / Exclude BuildTypes)
+### Example 4: Build Type Filtering
 
 ```kotlin
 apkNamer {
-    // تغییر نام فقط برای بیلد‌های release
+    // Only rename APKs for release builds
     targetBuildTypes = listOf("release")
-    
-    // یا نادیده گرفتن debug:
+
+    // Or exclude specific build types:
     // excludeBuildTypes = listOf("debug")
 }
 ```
 
-### نمونه ۵: شخصی‌سازی ۱۰۰٪ با لامبدا (Custom Resolver)
+### Example 5: 100% Custom Resolver Lambda
+
+For advanced custom requirements, define a Kotlin closure with access to `VariantContext`:
 
 ```kotlin
 apkNamer {
@@ -177,7 +210,7 @@ apkNamer {
         if (ctx.buildType == "debug") {
             "GatePay_Test_${ctx.flavorName}_v${ctx.versionName}.apk"
         } else {
-            "GatePay_${ctx.flavorName}_${ctx.versionName}.apk"
+            "GatePay_${ctx.flavorName}_${ctx.versionName}_${ctx.date}.apk"
         }
     }
 }
@@ -185,53 +218,59 @@ apkNamer {
 
 ---
 
-### جدول کامل گزینه‌های تنظیمات:
+## 📖 Configuration Reference
 
-| گزینه | نوع | مقدار پیش‌فرض | توضیحات |
+| Option | Type | Default | Description |
 | :--- | :--- | :--- | :--- |
-| `enabled` | `Boolean` | `true` | فعال یا غیرفعال کردن کل پلاگین |
-| `baseName` | `String?` | `null` | نام پایه APK (پیش‌فرض: `rootProject.name`) |
-| `separator` | `String` | `"_"` | کاراکتر یا رشته جداکننده بین اجزای نام APK |
-| `pattern` | `String?` | `null` | الگوی رشته‌ای نام فایل با پشتیبانی از توکن‌ها |
-| `prefix` | `String` | `""` | پیشوند متنی قبل از نام فایل |
-| `suffix` | `String` | `""` | پسوند متنی قبل از `.apk` |
-| `includeBaseName` | `Boolean` | `true` | درج نام پایه در حالت پیش‌فرض |
-| `includeFlavor` | `Boolean` | `true` | درج Flavor در صورت وجود |
-| `includeBuildType` | `Boolean` | `true` | درج نوع بیلد (`release`/`debug`) |
-| `includeVersionName`| `Boolean` | `true` | درج شماره نسخه برنامه |
-| `includeVersionCode`| `Boolean` | `false` | درج کد نسخه عددی برنامه |
-| `includeDate` | `Boolean` | `false` | درج تاریخ ایجاد بیلد |
-| `includeGitSha` | `Boolean` | `false` | درج هش کوتاه کامیت Git |
-| `dateFormat` | `String` | `"yyyyMMdd"` | فرمت تاریخ بر اساس `SimpleDateFormat` |
-| `caseFormat` | `CaseFormat` | `PRESERVE` | استایل تبدیل حروف (`PRESERVE`, `LOWERCASE`, `UPPERCASE`, `SNAKE_CASE`, `KEBAB_CASE`) |
-| `targetBuildTypes` | `List<String>`| `emptyList()` | اعمال نام‌گذاری تنها روی بیلدتایپ‌های مشخص |
-| `excludeBuildTypes` | `List<String>`| `emptyList()` | مستثنی کردن بیلدتایپ‌های مشخص از تغییر نام |
-| `outputFileName(block)` | `(VariantContext) -> String` | `null` | تابع لامبدا برای تعریف منطق کاملاً اختصاصی |
+| `enabled` | `Boolean` | `true` | Enables or disables automated APK renaming. |
+| `baseName` | `String?` | `null` | Base application name. Falls back to `rootProject.name` if unset. |
+| `separator` | `String` | `"_"` | Separator delimiter between default components. |
+| `pattern` | `String?` | `null` | Custom string template with token interpolation. |
+| `prefix` | `String` | `""` | String prepended to the final filename. |
+| `suffix` | `String` | `""` | String appended before the `.apk` extension. |
+| `includeBaseName` | `Boolean` | `true` | Include base name in default scheme. |
+| `includeFlavor` | `Boolean` | `true` | Include product flavor if available. |
+| `includeBuildType` | `Boolean` | `true` | Include build type (`release`/`debug`). |
+| `includeVersionName` | `Boolean` | `true` | Include application version name. |
+| `includeVersionCode` | `Boolean` | `false` | Include application version code. |
+| `includeDate` | `Boolean` | `false` | Include build date. |
+| `includeGitSha` | `Boolean` | `false` | Include short Git commit SHA. |
+| `dateFormat` | `String` | `"yyyyMMdd"` | Date pattern used for `{date}` and `includeDate`. |
+| `caseFormat` | `CaseFormat` | `PRESERVE` | Character case conversion (`PRESERVE`, `LOWERCASE`, `UPPERCASE`, `SNAKE_CASE`, `KEBAB_CASE`). |
+| `targetBuildTypes` | `List<String>` | `emptyList()` | List of build types to process. If empty, all are processed. |
+| `excludeBuildTypes` | `List<String>` | `emptyList()` | List of build types to ignore. |
+| `outputFileName(block)` | `(VariantContext) -> String` | `null` | Custom lambda resolver for absolute control. |
 
 ---
 
-## 📋 پیش‌نیازها و سازگاری
+## 📋 Compatibility
 
-- **Java**: 17 یا بالاتر
-- **Android Gradle Plugin (AGP)**: نسخه 8.0.0 یا بالاتر
-- **Gradle**: نسخه 8.0 یا بالاتر
+- **Java**: 17 or higher
+- **Android Gradle Plugin (AGP)**: 8.0.0 or higher
+- **Gradle**: 8.0 or higher
 
 ---
 
-## 🛠 راهنمای توسعه و انتشار نسخه جدید (برای نگه‌دارندگان)
+## 🛠 Maintainers Guide (Publishing to JitPack)
 
-برای انتشار نسخه جدید روی JitPack:
+To release a new version to JitPack:
 
-۱. نسخه را در فایل `build.gradle.kts` به‌روزرسانی کنید.
-۲. تغییرات را کامیت و پوش کنید:
-```bash
-git add .
-git commit -m "Release version 1.5.0"
-git push
-```
-۳. یک Git Tag ایجاد کرده و پوش نمایید:
-```bash
-git tag 1.5.0
-git push origin 1.5.0
-```
-۴. وضعیت بیلد نسخه جدید را در صفحه [JitPack SalarTaheri/apk-namer-plugin](https://jitpack.io/#SalarTaheri/apk-namer-plugin) بررسی کنید.
+1. Update the version string in `build.gradle.kts`.
+2. Commit and push the changes:
+   ```bash
+   git add .
+   git commit -m "Release version 1.5.0"
+   git push
+   ```
+3. Create and push a Git tag:
+   ```bash
+   git tag 1.5.0
+   git push origin 1.5.0
+   ```
+4. Check the build status on [JitPack SalarTaheri/apk-namer-plugin](https://jitpack.io/#SalarTaheri/apk-namer-plugin).
+
+---
+
+## 📄 License
+
+This project is licensed under the Apache 2.0 License.
